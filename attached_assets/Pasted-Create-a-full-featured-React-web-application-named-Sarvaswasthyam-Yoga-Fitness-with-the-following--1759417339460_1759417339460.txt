@@ -1,0 +1,82 @@
+Create a full-featured React web application named Sarvaswasthyam Yoga & Fitness with the following features and structure:
+
+Core Features:
+Dual Profiles with Role-Based Access:
+
+Users and Admins have separate roles.
+
+Users can browse and book yoga sessions, watch exercise videos, make payments, and view their booking dashboards.
+
+Admins have a dedicated admin panel/dashboard with access to all bookings, session management (create/edit/delete), posting activities, and user management.
+
+Authentication:
+
+Login and logout for both user and admin profiles.
+
+Store user role in React Context for role-based rendering and route protection.
+
+Protect routes so only admins access admin pages.
+
+User Functionality:
+
+Browse yoga sessions by category, level, and time.
+
+Book sessions with real-time availability tracking.
+
+Secure payment processing simulated via forms.
+
+Exercise library with embedded YouTube videos and modal video player.
+
+Dashboard for booking history and profile management.
+
+Admin Functionality:
+
+Overview dashboard with bookings statistics, revenue, and user activity.
+
+Create, update, and cancel yoga sessions.
+
+Post announcements or new activities.
+
+Manage users and view booking details.
+
+Technical Specifications:
+React 18, React Router v6 for client-side routing.
+
+React Context API for authentication and booking state.
+
+Custom React hooks for API simulation and localStorage.
+
+Functional components and hooks exclusively (no class components).
+
+Modal video player with YouTube iframe integration.
+
+Form validation with React state.
+
+Responsive mobile-friendly design using CSS modules or styled-components.
+
+Role-based route protection with <ProtectedRoute> and <AdminRoute> wrappers.
+
+Use mock JSON data initially for sessions, exercises, bookings, and users.
+
+Persist authentication and booking in localStorage.
+
+Pages and Components:
+Home — marketing landing page with brand info and CTA.
+
+Sessions — browse and book yoga sessions with filters.
+
+Exercises — video library with YouTube videos and watch modal.
+
+UserDashboard — manage bookings and profile.
+
+AdminDashboard — manage sessions, bookings, and posts.
+
+Navbar — navigation with dynamic options based on role.
+
+BookingModal — multi-step booking and payment modal.
+
+VideoModal — in-app video player modal using YouTube iframe.
+
+LoginPage — login form for both users and admins.
+
+ProtectedRoute and AdminRoute — route guards for authentication.
