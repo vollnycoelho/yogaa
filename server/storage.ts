@@ -1,9 +1,4 @@
 import { 
-  users, 
-  sessions, 
-  bookings, 
-  exercises, 
-  announcements,
   type User, 
   type InsertUser,
   type Session,
@@ -15,8 +10,6 @@ import {
   type Announcement,
   type InsertAnnouncement
 } from "@shared/schema";
-import { db } from "./db";
-import { eq, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export interface IStorage {
@@ -54,24 +47,164 @@ export interface IStorage {
   deleteAnnouncement(id: string): Promise<boolean>;
 }
 
-export class DatabaseStorage implements IStorage {
+// In-memory storage implementation
+export class InMemoryStorage implements IStorage {
+  private users: Map<string, User> = new Map();
+  private sessions: Map<string, Session> = new Map();
+  private bookings: Map<string, Booking> = new Map();
+  private exercises: Map<string, Exercise> = new Map();
+  private announcements: Map<string, Announcement> = new Map();
+
+  constructor() {
+    this.seedData();
+  }
+
+  private generateId(): string {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  private async seedData() {
+    // Create demo admin user
+    const adminId = this.generateId();
+    const adminPassword = await bcrypt.hash("admin123", 10);
+    this.users.set(adminId, {
+      id: adminId,
+      username: "admin",
+      email: "admin@yoga.com",
+      password: adminPassword,
+      role: "admin",
+      fullName: "Admin User",
+      createdAt: new Date(),
+    });
+
+    // Create demo regular user
+    const userId = this.generateId();
+    const userPassword = await bcrypt.hash("user123", 10);
+    this.users.set(userId, {
+      id: userId,
+      username: "user",
+      email: "user@yoga.com",
+      password: userPassword,
+      role: "user",
+      fullName: "Demo User",
+      createdAt: new Date(),
+    });
+
+    // Create demo sessions
+    const session1Id = this.generateId();
+    this.sessions.set(session1Id, {
+      id: session1Id,
+      title: "Morning Vinyasa Flow",
+      description: "Start your day with an energizing vinyasa flow practice",
+      instructor: "Sarah Johnson",
+      date: new Date("2025-10-15"),
+      startTime: "07:00",
+      endTime: "08:00",
+      level: "intermediate",
+      maxParticipants: 20,
+      currentParticipants: 8,
+      location: "Studio A",
+      createdAt: new Date(),
+    });
+
+    const session2Id = this.generateId();
+    this.sessions.set(session2Id, {
+      id: session2Id,
+      title: "Gentle Hatha Yoga",
+      description: "A gentle practice suitable for all levels",
+      instructor: "Mike Chen",
+      date: new Date("2025-10-16"),
+      startTime: "10:00",
+      endTime: "11:00",
+      level: "beginner",
+      maxParticipants: 15,
+      currentParticipants: 5,
+      location: "Studio B",
+      createdAt: new Date(),
+    });
+
+    const session3Id = this.generateId();
+    this.sessions.set(session3Id, {
+      id: session3Id,
+      title: "Power Yoga",
+      description: "High-intensity yoga for strength and stamina",
+      instructor: "Emma Davis",
+      date: new Date("2025-10-17"),
+      startTime: "18:00",
+      endTime: "19:00",
+      level: "advanced",
+      maxParticipants: 12,
+      currentParticipants: 3,
+      location: "Studio A",
+      createdAt: new Date(),
+    });
+
+    // Create demo exercises
+    const exercise1Id = this.generateId();
+    this.exercises.set(exercise1Id, {
+      id: exercise1Id,
+      name: "Downward Dog",
+      description: "A foundational pose that stretches and strengthens the body",
+      category: "strength",
+      difficulty: "beginner",
+      duration: 60,
+      videoUrl: "https://example.com/downward-dog",
+      imageUrl: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b",
+      createdAt: new Date(),
+    });
+
+    const exercise2Id = this.generateId();
+    this.exercises.set(exercise2Id, {
+      id: exercise2Id,
+      name: "Warrior II",
+      description: "Build strength and stability in the legs and core",
+      category: "strength",
+      difficulty: "intermediate",
+      duration: 45,
+      videoUrl: "https://example.com/warrior-2",
+      imageUrl: "https://images.unsplash.com/photo-1588286840104-8957b019727f",
+      createdAt: new Date(),
+    });
+
+    // Create demo announcements
+    const announcement1Id = this.generateId();
+    this.announcements.set(announcement1Id, {
+      id: announcement1Id,
+      title: "Welcome to Our Yoga Studio!",
+      content: "We're excited to have you join our community. Check out our class schedule and book your first session today!",
+      authorId: adminId,
+      createdAt: new Date(),
+    });
+
+    const announcement2Id = this.generateId();
+    this.announcements.set(announcement2Id, {
+      id: announcement2Id,
+      title: "New Advanced Classes Added",
+      content: "We've added new advanced level classes for experienced practitioners. Book now to secure your spot!",
+      authorId: adminId,
+      createdAt: new Date(),
+    });
+  }
+
   // User methods
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    return this.users.get(id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    return Array.from(this.users.values()).find(u => u.username === username);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    const id = this.generateId();
     const hashedPassword = await bcrypt.hash(insertUser.password, 10);
-    const [user] = await db
-      .insert(users)
-      .values({ ...insertUser, password: hashedPassword })
-      .returning();
+    const user: User = {
+      id,
+      ...insertUser,
+      password: hashedPassword,
+      createdAt: new Date(),
+    };
+    this.users.set(id, user);
     return user;
   }
 
@@ -81,121 +214,131 @@ export class DatabaseStorage implements IStorage {
 
   // Session methods
   async getSessions(): Promise<Session[]> {
-    return await db.select().from(sessions);
+    return Array.from(this.sessions.values()).sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
   }
 
   async getSession(id: string): Promise<Session | undefined> {
-    const [session] = await db.select().from(sessions).where(eq(sessions.id, id));
-    return session || undefined;
+    return this.sessions.get(id);
   }
 
   async createSession(insertSession: InsertSession): Promise<Session> {
-    const [session] = await db
-      .insert(sessions)
-      .values(insertSession)
-      .returning();
+    const id = this.generateId();
+    const session: Session = {
+      id,
+      ...insertSession,
+      currentParticipants: 0,
+      createdAt: new Date(),
+    };
+    this.sessions.set(id, session);
     return session;
   }
 
   async updateSession(id: string, updateData: Partial<Omit<Session, 'id'>>): Promise<Session | undefined> {
-    const [session] = await db
-      .update(sessions)
-      .set(updateData)
-      .where(eq(sessions.id, id))
-      .returning();
-    return session || undefined;
+    const session = this.sessions.get(id);
+    if (!session) return undefined;
+    
+    const updatedSession = { ...session, ...updateData };
+    this.sessions.set(id, updatedSession);
+    return updatedSession;
   }
 
   async deleteSession(id: string): Promise<boolean> {
-    const result = await db.delete(sessions).where(eq(sessions.id, id));
-    return result.rowCount ? result.rowCount > 0 : false;
+    return this.sessions.delete(id);
   }
 
   // Booking methods
   async getBookings(): Promise<Booking[]> {
-    return await db.select().from(bookings);
+    return Array.from(this.bookings.values());
   }
 
   async getBookingsByUser(userId: string): Promise<Booking[]> {
-    return await db.select().from(bookings).where(eq(bookings.userId, userId));
+    return Array.from(this.bookings.values()).filter(b => b.userId === userId);
   }
 
   async getBooking(id: string): Promise<Booking | undefined> {
-    const [booking] = await db.select().from(bookings).where(eq(bookings.id, id));
-    return booking || undefined;
+    return this.bookings.get(id);
   }
 
   async createBooking(insertBooking: InsertBooking): Promise<Booking> {
-    const [booking] = await db
-      .insert(bookings)
-      .values(insertBooking)
-      .returning();
+    const id = this.generateId();
+    const booking: Booking = {
+      id,
+      ...insertBooking,
+      createdAt: new Date(),
+    };
+    this.bookings.set(id, booking);
     return booking;
   }
 
   async updateBooking(id: string, updateData: Partial<InsertBooking>): Promise<Booking | undefined> {
-    const [booking] = await db
-      .update(bookings)
-      .set(updateData)
-      .where(eq(bookings.id, id))
-      .returning();
-    return booking || undefined;
+    const booking = this.bookings.get(id);
+    if (!booking) return undefined;
+    
+    const updatedBooking = { ...booking, ...updateData };
+    this.bookings.set(id, updatedBooking);
+    return updatedBooking;
   }
 
   async deleteBooking(id: string): Promise<boolean> {
-    const result = await db.delete(bookings).where(eq(bookings.id, id));
-    return result.rowCount ? result.rowCount > 0 : false;
+    return this.bookings.delete(id);
   }
 
   // Exercise methods
   async getExercises(): Promise<Exercise[]> {
-    return await db.select().from(exercises);
+    return Array.from(this.exercises.values());
   }
 
   async getExercise(id: string): Promise<Exercise | undefined> {
-    const [exercise] = await db.select().from(exercises).where(eq(exercises.id, id));
-    return exercise || undefined;
+    return this.exercises.get(id);
   }
 
   async createExercise(insertExercise: InsertExercise): Promise<Exercise> {
-    const [exercise] = await db
-      .insert(exercises)
-      .values(insertExercise)
-      .returning();
+    const id = this.generateId();
+    const exercise: Exercise = {
+      id,
+      ...insertExercise,
+      createdAt: new Date(),
+    };
+    this.exercises.set(id, exercise);
     return exercise;
   }
 
   async updateExercise(id: string, updateData: Partial<InsertExercise>): Promise<Exercise | undefined> {
-    const [exercise] = await db
-      .update(exercises)
-      .set(updateData)
-      .where(eq(exercises.id, id))
-      .returning();
-    return exercise || undefined;
+    const exercise = this.exercises.get(id);
+    if (!exercise) return undefined;
+    
+    const updatedExercise = { ...exercise, ...updateData };
+    this.exercises.set(id, updatedExercise);
+    return updatedExercise;
   }
 
   async deleteExercise(id: string): Promise<boolean> {
-    const result = await db.delete(exercises).where(eq(exercises.id, id));
-    return result.rowCount ? result.rowCount > 0 : false;
+    return this.exercises.delete(id);
   }
 
   // Announcement methods
   async getAnnouncements(): Promise<Announcement[]> {
-    return await db.select().from(announcements);
+    return Array.from(this.announcements.values()).sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }
 
   async createAnnouncement(insertAnnouncement: InsertAnnouncement): Promise<Announcement> {
-    const [announcement] = await db
-      .insert(announcements)
-      .values(insertAnnouncement)
-      .returning();
+    const id = this.generateId();
+    const announcement: Announcement = {
+      id,
+      ...insertAnnouncement,
+      createdAt: new Date(),
+    };
+    this.announcements.set(id, announcement);
     return announcement;
   }
 
   async deleteAnnouncement(id: string): Promise<boolean> {
-    const result = await db.delete(announcements).where(eq(announcements.id, id));
-    return result.rowCount ? result.rowCount > 0 : false;
+    return this.announcements.delete(id);
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new InMemoryStorage();
