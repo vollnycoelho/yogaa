@@ -319,7 +319,7 @@ export default function AdminDashboard() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard title="Total Bookings" value={bookings.length} icon={Calendar} />
-          <StatCard title="Revenue" value={`$${totalRevenue}`} icon={DollarSign} />
+          <StatCard title="Revenue" value={`₹${totalRevenue}`} icon={DollarSign} />
           <StatCard title="Total Sessions" value={sessions.length} icon={Activity} />
           <StatCard title="Avg. Participants" value={sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + s.currentParticipants, 0) / sessions.length) : 0} icon={Users} />
         </div>
@@ -344,7 +344,7 @@ export default function AdminDashboard() {
                           <p className="text-sm text-muted-foreground">{session?.title || 'Unknown Session'}</p>
                           <p className="text-xs text-muted-foreground">{booking.sessionDate}</p>
                         </div>
-                        <div className="font-semibold">${session?.price || 0}</div>
+                        <div className="font-semibold">₹{session?.price || 0}</div>
                       </div>
                     );
                   })

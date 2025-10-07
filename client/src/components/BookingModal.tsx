@@ -27,6 +27,7 @@ export function BookingModal({ open, onClose, sessionId, sessionTitle, sessionPr
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     date: '',
+    time: '',
     name: '',
     email: '',
     phone: '',
@@ -59,6 +60,7 @@ export function BookingModal({ open, onClose, sessionId, sessionTitle, sessionPr
       setStep(1);
       setFormData({
         date: '',
+        time: '',
         name: '',
         email: '',
         phone: '',
@@ -78,10 +80,10 @@ export function BookingModal({ open, onClose, sessionId, sessionTitle, sessionPr
   });
 
   const handleComplete = () => {
-    if (!sessionId || !formData.date) {
+    if (!sessionId || !formData.date || !formData.time) {
       toast({ 
         title: 'Missing information', 
-        description: 'Please select a date for your booking.',
+        description: 'Please select both date and time for your booking.',
         variant: 'destructive'
       });
       return;
@@ -89,7 +91,7 @@ export function BookingModal({ open, onClose, sessionId, sessionTitle, sessionPr
 
     createBookingMutation.mutate({
       sessionId,
-      sessionDate: formData.date,
+      sessionDate: `${formData.date} ${formData.time}`,
     });
   };
 
@@ -110,7 +112,7 @@ export function BookingModal({ open, onClose, sessionId, sessionTitle, sessionPr
               <span>Step 1: Select Date & Time</span>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="session">Session</Label>
+              <Label htmlFor="session">Training Session</Label>
               <Input
                 id="session"
                 value={sessionTitle || ''}
@@ -126,6 +128,16 @@ export function BookingModal({ open, onClose, sessionId, sessionTitle, sessionPr
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 data-testid="input-date"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="time">Preferred Time</Label>
+              <Input
+                id="time"
+                type="time"
+                value={formData.time}
+                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                data-testid="input-time"
               />
             </div>
           </div>
@@ -181,7 +193,7 @@ export function BookingModal({ open, onClose, sessionId, sessionTitle, sessionPr
             <div className="rounded-lg bg-muted p-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Total Amount</span>
-                <span className="text-2xl font-semibold">${sessionPrice || 0}</span>
+                <span className="text-2xl font-semibold">₹{sessionPrice || 0}</span>
               </div>
             </div>
             <div className="space-y-2">

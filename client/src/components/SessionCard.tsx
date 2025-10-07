@@ -80,7 +80,7 @@ export function SessionCard({
         </div>
       </CardContent>
       <CardFooter className="flex items-center justify-between gap-2 p-6 pt-0">
-        <div className="text-2xl font-semibold">${price}</div>
+        <div className="text-2xl font-semibold">₹{price}</div>
         <Button
           disabled={!isAvailable}
           onClick={() => onBook?.(id)}
