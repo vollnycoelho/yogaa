@@ -81,6 +81,10 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
+    const url = process.env.REPLIT_DEV_DOMAIN 
+      ? `https://${process.env.REPLIT_DEV_DOMAIN}`
+      : `http://localhost:${port}`;
     log(`serving on port ${port}`);
+    console.log(`\n🚀 Application ready at: ${url}\n`);
   });
 })();
