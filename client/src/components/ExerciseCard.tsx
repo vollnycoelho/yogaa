@@ -4,10 +4,10 @@ import { Play, Clock } from 'lucide-react';
 
 interface ExerciseCardProps {
   id: string;
-  title: string;
+  name: string;
   description: string;
   duration: number;
-  level: string;
+  difficulty: string;
   category: string;
   thumbnailUrl?: string;
   onPlay?: (id: string) => void;
@@ -15,10 +15,10 @@ interface ExerciseCardProps {
 
 export function ExerciseCard({
   id,
-  title,
+  name,
   description,
   duration,
-  level,
+  difficulty,
   category,
   thumbnailUrl,
   onPlay,
@@ -33,7 +33,7 @@ export function ExerciseCard({
         {thumbnailUrl && (
           <img
             src={thumbnailUrl}
-            alt={title}
+            alt={name}
             className="h-full w-full object-cover transition-transform group-hover:scale-105"
           />
         )}
@@ -49,9 +49,9 @@ export function ExerciseCard({
       </div>
       <CardHeader className="p-4">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold leading-tight">{title}</h3>
+          <h3 className="font-semibold leading-tight">{name}</h3>
           <Badge variant="secondary" className="shrink-0">
-            {level}
+            {difficulty}
           </Badge>
         </div>
       </CardHeader>

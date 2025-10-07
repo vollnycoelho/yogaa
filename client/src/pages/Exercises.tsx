@@ -30,9 +30,9 @@ export default function Exercises() {
   });
 
   const filteredExercises = exercises.filter((exercise) => {
-    const matchesSearch = exercise.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchesSearch = exercise.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          exercise.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLevel = selectedLevel === 'all' || exercise.level === selectedLevel;
+    const matchesLevel = selectedLevel === 'all' || exercise.difficulty === selectedLevel;
     return matchesSearch && matchesLevel;
   });
 
@@ -102,7 +102,7 @@ export default function Exercises() {
         open={videoModal.open}
         onClose={() => setVideoModal({ open: false })}
         videoUrl={videoModal.exercise?.videoUrl}
-        title={videoModal.exercise?.title}
+        title={videoModal.exercise?.name}
       />
 
       <Footer />

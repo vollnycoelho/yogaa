@@ -97,13 +97,14 @@ export class InMemoryStorage implements IStorage {
       title: "Morning Vinyasa Flow",
       description: "Start your day with an energizing vinyasa flow practice",
       instructor: "Sarah Johnson",
-      date: new Date("2025-10-15"),
-      startTime: "07:00",
-      endTime: "08:00",
-      level: "intermediate",
+      category: "Vinyasa",
+      level: "Intermediate",
+      duration: 60,
       maxParticipants: 20,
       currentParticipants: 8,
-      location: "Studio A",
+      price: 800,
+      schedule: "Mon, Wed, Fri - 7:00 AM",
+      imageUrl: "",
       createdAt: new Date(),
     });
 
@@ -113,13 +114,14 @@ export class InMemoryStorage implements IStorage {
       title: "Gentle Hatha Yoga",
       description: "A gentle practice suitable for all levels",
       instructor: "Mike Chen",
-      date: new Date("2025-10-16"),
-      startTime: "10:00",
-      endTime: "11:00",
-      level: "beginner",
+      category: "Hatha",
+      level: "Beginner",
+      duration: 60,
       maxParticipants: 15,
       currentParticipants: 5,
-      location: "Studio B",
+      price: 600,
+      schedule: "Tue, Thu - 10:00 AM",
+      imageUrl: "",
       createdAt: new Date(),
     });
 
@@ -129,13 +131,14 @@ export class InMemoryStorage implements IStorage {
       title: "Power Yoga",
       description: "High-intensity yoga for strength and stamina",
       instructor: "Emma Davis",
-      date: new Date("2025-10-17"),
-      startTime: "18:00",
-      endTime: "19:00",
-      level: "advanced",
+      category: "Vinyasa",
+      level: "Advanced",
+      duration: 60,
       maxParticipants: 12,
       currentParticipants: 3,
-      location: "Studio A",
+      price: 1000,
+      schedule: "Mon, Wed - 6:00 PM",
+      imageUrl: "",
       createdAt: new Date(),
     });
 
@@ -214,9 +217,7 @@ export class InMemoryStorage implements IStorage {
 
   // Session methods
   async getSessions(): Promise<Session[]> {
-    return Array.from(this.sessions.values()).sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+    return Array.from(this.sessions.values());
   }
 
   async getSession(id: string): Promise<Session | undefined> {
