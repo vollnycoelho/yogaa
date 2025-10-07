@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Heart, Target, Users } from "lucide-react";
-import heroImage from  '@assets/generated_images/Indoor_yoga_studio_session_520d01bc.png';
+import heroImage from '@assets/generated_images/Yoga_hero.png';
 
 export default function Home() {
   const benefits = [
