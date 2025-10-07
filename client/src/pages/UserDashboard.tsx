@@ -3,9 +3,9 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/DemoAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { mockApi } from '@/lib/mockApi';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar, Clock, User, Mail, X } from 'lucide-react';
 import type { Booking, Session } from '@shared/schema';
@@ -33,14 +33,16 @@ export default function UserDashboard() {
 
   const cancelBookingMutation = useMutation({
     mutationFn: async (id: string) => {
-      await mockApi.bookings.cancel(id);
+      const res = await apiRequest('DELETE', `/api/bookings/${id}`);
+      return res.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/bookings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
       toast({ 
         title: 'Booking cancelled', 
         description: 'Your booking has been cancelled successfully.' 
       });
-      window.location.reload();
     },
     onError: () => {
       toast({ 

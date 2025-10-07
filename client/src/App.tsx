@@ -17,7 +17,7 @@ import UserDashboard from "@/pages/UserDashboard";
 import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/not-found";
 
-const IS_DEMO_MODE = true;
+const IS_DEMO_MODE = false;
 
 function Router() {
   return (

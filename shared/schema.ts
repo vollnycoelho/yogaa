@@ -21,12 +21,13 @@ export const insertSessionSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   instructor: z.string().min(1),
-  date: z.coerce.date(),
-  startTime: z.string(),
-  endTime: z.string(),
-  level: z.enum(["beginner", "intermediate", "advanced"]),
+  category: z.string().min(1),
+  level: z.string().min(1),
+  duration: z.number().int().positive(),
   maxParticipants: z.number().int().positive(),
-  location: z.string().min(1),
+  price: z.number().positive(),
+  schedule: z.string().min(1),
+  imageUrl: z.string().optional(),
 });
 
 export const updateSessionSchema = insertSessionSchema.partial();
@@ -43,6 +44,7 @@ export interface Session extends InsertSession {
 export const insertBookingSchema = z.object({
   userId: z.string(),
   sessionId: z.string(),
+  sessionDate: z.string(),
   status: z.enum(["confirmed", "cancelled", "completed"]).default("confirmed"),
 });
 
