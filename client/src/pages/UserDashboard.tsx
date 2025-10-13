@@ -1,14 +1,14 @@
+import { useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar, Clock, User, Mail, X } from 'lucide-react';
 import type { Booking, Session } from '@/types';
+import { mockBookings, mockSessions } from '@/lib/mockData';
 
 interface BookingWithSession extends Booking {
   session?: Session;
@@ -17,45 +17,23 @@ interface BookingWithSession extends Booking {
 export default function UserDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [bookings, setBookings] = useState(mockBookings);
 
-  const { data: bookings = [], isLoading } = useQuery<Booking[]>({
-    queryKey: ['/api/bookings'],
-  });
-
-  const { data: sessions = [] } = useQuery<Session[]>({
-    queryKey: ['/api/sessions'],
-  });
+  const isLoading = false;
+  const sessions = mockSessions;
 
   const bookingsWithSessions: BookingWithSession[] = bookings.map((booking) => ({
     ...booking,
     session: sessions.find((s) => s.id === booking.sessionId),
   }));
 
-  const cancelBookingMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await apiRequest('DELETE', `/api/bookings/${id}`);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/bookings'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
+  const handleCancelBooking = (id: string) => {
+    if (confirm('Are you sure you want to cancel this booking?')) {
+      setBookings(bookings.filter(b => b.id !== id));
       toast({ 
         title: 'Booking cancelled', 
         description: 'Your booking has been cancelled successfully.' 
       });
-    },
-    onError: () => {
-      toast({ 
-        title: 'Cancellation failed', 
-        description: 'Unable to cancel booking. Please try again.',
-        variant: 'destructive'
-      });
-    },
-  });
-
-  const handleCancelBooking = (id: string) => {
-    if (confirm('Are you sure you want to cancel this booking?')) {
-      cancelBookingMutation.mutate(id);
     }
   };
 
@@ -135,7 +113,6 @@ export default function UserDashboard() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleCancelBooking(booking.id)}
-                          disabled={cancelBookingMutation.isPending}
                           data-testid={`button-cancel-${booking.id}`}
                         >
                           <X className="h-4 w-4" />

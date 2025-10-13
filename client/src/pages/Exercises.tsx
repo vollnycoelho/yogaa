@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { ExerciseCard } from '@/components/ExerciseCard';
@@ -8,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import type { Exercise } from '@/types';
+import { mockExercises } from '@/lib/mockData';
 import meditationImage from '@assets/generated_images/Meditation_session_image_9674324d.png';
 import powerYogaImage from '@assets/generated_images/Power_yoga_session_0ab6d541.png';
 import indoorImage from '@assets/generated_images/Indoor_yoga_studio_session_520d01bc.png';
@@ -25,9 +25,8 @@ export default function Exercises() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLevel, setSelectedLevel] = useState('all');
 
-  const { data: exercises = [], isLoading } = useQuery<Exercise[]>({
-    queryKey: ['/api/exercises'],
-  });
+  const exercises = mockExercises;
+  const isLoading = false;
 
   const filteredExercises = exercises.filter((exercise) => {
     const matchesSearch = exercise.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { mockSessions, mockExercises, mockBookings, mockAnnouncements } from "./mockData";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -29,7 +30,27 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    const key = queryKey.join("/") as string;
+    
+    // Return mock data based on the query key
+    if (key === '/api/sessions') {
+      return mockSessions as any;
+    }
+    
+    if (key === '/api/exercises') {
+      return mockExercises as any;
+    }
+    
+    if (key === '/api/bookings') {
+      return mockBookings as any;
+    }
+    
+    if (key === '/api/announcements') {
+      return mockAnnouncements as any;
+    }
+    
+    // For other endpoints, try to fetch normally
+    const res = await fetch(key, {
       credentials: "include",
     });
 

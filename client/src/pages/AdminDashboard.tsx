@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
@@ -14,11 +12,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, DollarSign, Users, Activity, Plus, Edit, Trash } from 'lucide-react';
 import type { Session, Booking, User as UserType } from '@/types';
+import { mockSessions, mockBookings } from '@/lib/mockData';
 
 export default function AdminDashboard() {
   const { toast } = useToast();
   const [sessionDialog, setSessionDialog] = useState(false);
   const [announcementDialog, setAnnouncementDialog] = useState(false);
+  const [sessions, setSessions] = useState(mockSessions);
+  const [bookings, setBookings] = useState(mockBookings);
   const [sessionForm, setSessionForm] = useState({
     title: '',
     description: '',
@@ -35,97 +36,47 @@ export default function AdminDashboard() {
     content: '',
   });
 
-  const { data: sessions = [] } = useQuery<Session[]>({
-    queryKey: ['/api/sessions'],
-  });
-
-  const { data: bookings = [] } = useQuery<Booking[]>({
-    queryKey: ['/api/bookings'],
-  });
-
-  const createSessionMutation = useMutation({
-    mutationFn: async (data: typeof sessionForm) => {
-      const res = await apiRequest('POST', '/api/sessions', data);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
-      toast({ title: 'Session created successfully' });
-      setSessionDialog(false);
-      setSessionForm({
-        title: '',
-        description: '',
-        instructor: '',
-        category: 'Hatha',
-        level: 'Beginner',
-        duration: 60,
-        maxParticipants: 15,
-        price: 25,
-        schedule: '',
-      });
-    },
-    onError: () => {
-      toast({ 
-        title: 'Failed to create session', 
-        description: 'Please try again.',
-        variant: 'destructive'
-      });
-    },
-  });
-
-  const deleteSessionMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await apiRequest('DELETE', `/api/sessions/${id}`);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/sessions'] });
-      toast({ title: 'Session deleted successfully' });
-    },
-    onError: () => {
-      toast({ 
-        title: 'Failed to delete session',
-        variant: 'destructive'
-      });
-    },
-  });
-
-  const createAnnouncementMutation = useMutation({
-    mutationFn: async (data: typeof announcementForm) => {
-      const res = await apiRequest('POST', '/api/announcements', data);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/announcements'] });
-      toast({ title: 'Announcement published successfully' });
-      setAnnouncementDialog(false);
-      setAnnouncementForm({ title: '', content: '' });
-    },
-    onError: () => {
-      toast({ 
-        title: 'Failed to publish announcement',
-        variant: 'destructive'
-      });
-    },
-  });
-
   const totalRevenue = bookings.reduce((sum, booking) => {
     const session = sessions.find(s => s.id === booking.sessionId);
     return sum + (session?.price || 0);
   }, 0);
 
   const handleCreateSession = () => {
-    createSessionMutation.mutate(sessionForm);
+    const newSession: Session = {
+      id: String(sessions.length + 1),
+      ...sessionForm,
+      currentParticipants: 0,
+      maxParticipants: sessionForm.maxParticipants,
+      imageUrl: "/attached_assets/generated_images/Indoor_yoga_studio_session_520d01bc.png",
+      createdAt: new Date().toISOString()
+    };
+    setSessions([...sessions, newSession]);
+    toast({ title: 'Session created successfully' });
+    setSessionDialog(false);
+    setSessionForm({
+      title: '',
+      description: '',
+      instructor: '',
+      category: 'Hatha',
+      level: 'Beginner',
+      duration: 60,
+      maxParticipants: 15,
+      price: 25,
+      schedule: '',
+    });
   };
 
   const handleDeleteSession = (id: string) => {
     if (confirm('Are you sure you want to delete this session?')) {
-      deleteSessionMutation.mutate(id);
+      setSessions(sessions.filter(s => s.id !== id));
+      toast({ title: 'Session deleted successfully' });
     }
   };
 
   const handlePublishAnnouncement = () => {
-    createAnnouncementMutation.mutate(announcementForm);
+    toast({ title: 'Announcement published successfully' });
+    setAnnouncementDialog(false);
+    setAnnouncementForm({ title: '', content: '' });
   };
 
   return (
@@ -261,10 +212,9 @@ export default function AdminDashboard() {
                   <Button 
                     className="w-full" 
                     onClick={handleCreateSession}
-                    disabled={createSessionMutation.isPending}
                     data-testid="button-save-session"
                   >
-                    {createSessionMutation.isPending ? 'Creating...' : 'Create Session'}
+                    Create Session
                   </Button>
                 </div>
               </DialogContent>
@@ -306,10 +256,9 @@ export default function AdminDashboard() {
                   <Button 
                     className="w-full" 
                     onClick={handlePublishAnnouncement}
-                    disabled={createAnnouncementMutation.isPending}
                     data-testid="button-publish-announcement"
                   >
-                    {createAnnouncementMutation.isPending ? 'Publishing...' : 'Publish'}
+                    Publish
                   </Button>
                 </div>
               </DialogContent>
@@ -375,7 +324,6 @@ export default function AdminDashboard() {
                           variant="ghost" 
                           size="icon" 
                           onClick={() => handleDeleteSession(session.id)}
-                          disabled={deleteSessionMutation.isPending}
                           data-testid={`button-delete-${session.id}`}
                         >
                           <Trash className="h-4 w-4" />
