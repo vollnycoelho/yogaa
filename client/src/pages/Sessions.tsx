@@ -7,7 +7,7 @@ import { BookingModal } from '@/components/BookingModal';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { Session } from '@shared/schema';
+import type { Session } from '@/types';
 import indoorImage from '@assets/generated_images/Indoor_yoga_studio_session_520d01bc.png';
 import meditationImage from '@assets/generated_images/Meditation_session_image_9674324d.png';
 import powerYogaImage from '@assets/generated_images/Power_yoga_session_0ab6d541.png';

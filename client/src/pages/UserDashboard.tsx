@@ -8,7 +8,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Calendar, Clock, User, Mail, X } from 'lucide-react';
-import type { Booking, Session } from '@shared/schema';
+import type { Booking, Session } from '@/types';
 
 interface BookingWithSession extends Booking {
   session?: Session;
