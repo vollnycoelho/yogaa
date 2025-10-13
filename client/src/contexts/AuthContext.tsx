@@ -20,90 +20,67 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const HARDCODED_USERS = [
+  {
+    id: '1',
+    username: 'admin',
+    password: 'admin123',
+    email: 'admin@example.com',
+    role: 'admin' as const,
+    fullName: 'Admin User'
+  },
+  {
+    id: '2',
+    username: 'user',
+    password: 'user123',
+    email: 'user@example.com',
+    role: 'user' as const,
+    fullName: 'Regular User'
+  }
+];
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const storedUser = localStorage.getItem('auth_user');
+    if (storedUser) {
       try {
-        const response = await fetch('/api/auth/me', {
-          credentials: 'include',
-        });
-        
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-        }
+        setUser(JSON.parse(storedUser));
       } catch (error) {
-        console.error('Auth check failed:', error);
-      } finally {
-        setLoading(false);
+        console.error('Failed to parse stored user:', error);
+        localStorage.removeItem('auth_user');
       }
-    };
-
-    checkAuth();
+    }
+    setLoading(false);
   }, []);
 
   const login = async (username: string, password: string) => {
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ username, password }),
-      });
+    const foundUser = HARDCODED_USERS.find(
+      u => u.username === username && u.password === password
+    );
 
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error('Login failed:', error);
-      return false;
+    if (foundUser) {
+      const { password: _, ...userWithoutPassword } = foundUser;
+      setUser(userWithoutPassword);
+      localStorage.setItem('auth_user', JSON.stringify(userWithoutPassword));
+      return true;
     }
+    
+    return false;
   };
 
   const register = async (username: string, password: string, email: string, fullName: string) => {
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ username, password, email, fullName, role: 'user' }),
-      });
-
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        return { success: true };
-      }
-      
-      const errorData = await response.json();
-      return { success: false, error: errorData.error || 'Registration failed' };
-    } catch (error) {
-      console.error('Registration failed:', error);
-      return { success: false, error: 'Registration failed' };
-    }
+    return { 
+      success: false, 
+      error: 'Registration is disabled. Please use hardcoded credentials (admin/admin123 or user/user123)' 
+    };
   };
 
   const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      setUser(null);
-    } catch (error) {
-      console.error('Logout failed:', error);
-    }
+    setUser(null);
+    localStorage.removeItem('auth_user');
   };
 
   const value = {
